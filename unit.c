@@ -1,6 +1,7 @@
 #define TYPE_EYE 0
 #define TYPE_BODY 1
 #define TYPE_SKIRT 2
+#define TYPE_FIVE 3
 
 #define CON_LEN 1.0
 
@@ -20,13 +21,15 @@ typedef struct unit {
 	Connector *con2;
 } Unit;
 
-typedef struct connector {
+typedef struct drive {
 	float length;
 	Unit *unit;
-} Connector;
+} Drive;
+
+
 
 void unit_updateConnectors() {
-
+	
 }
 
 void unit_normalize(Unit *unit) {
@@ -39,9 +42,8 @@ void unit_normalize(Unit *unit) {
 	double cos_ = getCos(a, b, c);
 	double sin_ = getSin(cos_)
 	
-	unit->x = b * cos_ + left_unit->x;
-	unit->y = b * sin_ + left_unit->y;
-
+	unit->x = (float) (b * cos_) + left_unit->x;
+	unit->y = (float) (b * sin_) + left_unit->y;
 }
 
 double hypot(double a, double b) {
