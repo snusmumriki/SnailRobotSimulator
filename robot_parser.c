@@ -2,7 +2,7 @@
 
 #include <robot_parser.h>
 
-int numericSheme(int rows_num, int columns_num, char spase, char **sheme, int *nodes_num,  int *eyes_num) {
+int **numericSheme(int rows_num, int columns_num, char spase, char **sheme, int *nodes_num, int *eyes_num) {
 	int num = 0;
 	int init_size = sizeof(int*) * rows_num;
 	int **num_sheme = malloc(init_size + sizeof(int) * rows_num columns_num);
