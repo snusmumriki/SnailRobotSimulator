@@ -1,8 +1,9 @@
 #include <stdlib.h>
 
-#include <robot_parser.h>
+#include "robot_parser.h"
+#include "robot.h"
 
-int **numericSheme(int rows_num, int columns_num, char spase, char **sheme, int *nodes_num, int *eyes_num) {
+int **numSheme(int rows_num, int columns_num, char spase, char **sheme, int *nodes_num, int *eyes_num) {
 	int num = 0;
 	int init_size = sizeof(int*) * rows_num;
 	int **num_sheme = malloc(init_size + sizeof(int) * rows_num columns_num);
@@ -80,7 +81,7 @@ Robot *parse_robot(int rows_num, int columns_num, char spase, char **sheme) {
 	int eyes_num;
 	int edges_num;
 	
-	int **num_sheme = numericSheme(rows_num, columns_num, space, sheme, *nodes_num, *eyes_num);
+	int **num_sheme = numSheme(rows_num, columns_num, space, sheme, *nodes_num, *eyes_num);
 	Edge *edge_list = edgeList(rows_num, columns_num, num_sheme,  nodes_num, *edges_num);
 	int *adj_nums = adjNums(edges_num, edge_list);
 	free(num_sheme);
