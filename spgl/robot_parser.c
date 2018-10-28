@@ -3,35 +3,50 @@
 
 #include "robot_parser.h"
 
-int **numSheme(int rows_num, int columns_num, char **sheme, int *nodes_num) {
-	int num = 0;
+int **numSheme(int rows_num, int columns_num, char **sheme, int *nodes_num, int *eyes_num) {
+	*nodes_num = 0;
+	*eyes_num = 0;
+
 	int **num_sheme = malloc(sizeof(int*) * rows_num);
-	for ( int i = 0; i < rows_num; i++) 
+	for (int i = 0; i < rows_num; i++) 
 		num_sheme[i] = malloc(sizeof(int) * columns_num);
 	
-	for ( int i = 0; i < rows_num; i++) 
-		for ( int j = 0; j < columns_num; j++) {
-			if (sheme[i][j] != SPACE_CHAR) {
-				num_sheme[i][j] = num;
-				num++;
-			} else num_sheme[i][j] = -1;
+	for (int i = 0; i < rows_num; i++) 
+		for (int j = 0; j < columns_num; j++) {
+			if (sheme[i][j] != SPACE_CHAR)
+				num_sheme[i][j] = *nodes_num++;
+			else num_sheme[i][j] = -1;
+
+			if (sheme[i][j] == EYE_CHAR)
+				*eyes_num++;
 		}		
 	
-	*nodes_num = num;
 	return num_sheme;
 }
 
-Edge *edgeList(int rows_num, int columns_num, int **num_sheme, int nodes_num, int *edges_num) {
+int *eyeList(int rows_num, int columns_num, char **sheme, int **num_sheme, int eyes_num) {
+	int k = 0;
+	int *eye_list = malloc(sizeof(int) * eyes_num);
+
+	for (int i = 0; i < rows_num; i++)
+		for (int j = 0; j < columns_num; j++)
+			if (sheme[i][j] == EYE_CHAR)
+				eye_list[k++] = num_sheme[i][j];
+
+	return eye_list;
+}
+
+edge *edgeList(int rows_num, int columns_num, int **num_sheme, int nodes_num, int *edges_num) {
 	int num = 0;
-	Edge *edge_list = malloc(sizeof(Edge) * nodes_num * (MAX_ADJ_NUM / 2 + 1));
+	edge *edge_list = malloc(sizeof(edge) * nodes_num * MAX_ADJ_NUM / 2);
 	
 	for (int j = 0; j < columns_num; j++) 
 		for(int i = (j + 1) % 2; i < rows_num - 2; i += 2) {
 			int node0 = num_sheme[i][j];
 			int node1 = num_sheme[i+2][j];
 			if (node0 >= 0 && node1 >= 0) {
-				edge_list[num].node0 = node0;
-				edge_list[num].node1 = node1;
+				edge_list[num][0] = node0;
+				edge_list[num][1] = node1;
 				num++;
 			}
 		}
@@ -41,8 +56,8 @@ Edge *edgeList(int rows_num, int columns_num, int **num_sheme, int nodes_num, in
 			int node0 = num_sheme[i][j];
 			int node1 = num_sheme[i+1][j+1];
 			if (node0 >= 0 && node1 >= 0) {
-				edge_list[num].node0 = node0;
-				edge_list[num].node1 = node1;
+				edge_list[num][0] = node0;
+				edge_list[num][1] = node1;
 				num++;
 			}
 		}
@@ -52,8 +67,8 @@ Edge *edgeList(int rows_num, int columns_num, int **num_sheme, int nodes_num, in
 			int node0 = num_sheme[i][j];
 			int node1 = num_sheme[i+1][j-1];
 			if (node0 >= 0 && node1 >= 0) {
-				edge_list[num].node0 = node0;
-				edge_list[num].node1 = node1;
+				edge_list[num][0] = node0;
+				edge_list[num][1] = node1;
 				num++;
 			}
 		}
@@ -62,14 +77,32 @@ Edge *edgeList(int rows_num, int columns_num, int **num_sheme, int nodes_num, in
 	return edge_list;
 }
 
-int *adjNums(int edges_num, Edge *edge_list, int nodes_num) {
-	int *adj_nums = calloc(sizeof(int), nodes_num);
-	
+int *nodeOffsets(int rows_num, int columns_num, int **num_sheme, int nodes_num) {
+	int *offset = malloc(sizeof(int) * nodes_num);
+	int m = columns_num / 2;
+
+	for (int i = 0; i < rows_num; i++)
+		for (int j = 0; j < columns_num; i++) {
+			int node = num_sheme[i][j];
+			if (node >= 0)
+				offset[node] = j - m;
+		}
+
+	return offset;
+}
+
+adj *adjList(int nodes_num, int *offset, int edges_num, edge *edge_list) {
+	adj *adj_list = malloc(sizeof(adj) * nodes_num);
+		
 	for (int i = 0; i < edges_num; i++) {
-		adj_nums[edge_list[i].node0]++;
-		adj_nums[edge_list[i].node1]++;
+		int node0 = edge_list[i][0];
+		int node1 = edge_list[i][1];
+		int diff = offset[node0] - offset[node1];
+
+		adj_list[node0][BASE_1 + diff] = node1;
+		adj_list[node1][BASE_0 + diff] = node0;
 	}
-	
+						
 	return adj_nums;
 }
 
@@ -81,7 +114,6 @@ int parse_robot(char *file_in, char *file_out) {
 
 	fp = fopen(file_in, "r");
 	fscanf(fp, "%i%i", &rows_num, &columns_num);
-	printf("%i %i", rows_num, columns_num);
 	sheme = malloc(sizeof(char*) * rows_num);
 	for (int i = 0; i < rows_num; i++) {
 		sheme[i] = calloc(sizeof(char), columns_num + 1);
@@ -90,21 +122,22 @@ int parse_robot(char *file_in, char *file_out) {
 	fclose(fp);
 	
 	int nodes_num;
+	int eyes_num;
 	int edges_num;
 	
-	int **num_sheme = numSheme(rows_num, columns_num, sheme, &nodes_num);
-	Edge *edge_list = edgeList(rows_num, columns_num, num_sheme, nodes_num, &edges_num);
-	int *adj_nums = adjNums(edges_num, edge_list, nodes_num);
+	int **num_sheme = numSheme(rows_num, columns_num, sheme, &nodes_num, &eyes_num);
+	edge *edge_list = edgeList(rows_num, columns_num, num_sheme, nodes_num, &edges_num);
 	
 	fp = fopen(file_out, "w+");
 	fprintf(fp, "%i\n", edges_num);
 	for (int i = 0; i < edges_num; i++)
-		fprintf(fp, "%i %i\n", edge_list[i].node0, edge_list[i].node1);
+		fprintf(fp, "%i %i\n", edge_list[i][0], edge_list[i][1]);
 	
 	fprintf(fp, "\n");
 	fprintf(fp, "%i\n", nodes_num);
 	for (int i = 0; i < nodes_num; i++)
-		fprintf(fp, "%i %i\n", i, adj_nums[i]);
+		for (int j = 0; j < MAX_ADJ_NUM; j++)
+		fprintf(fp, "%i %i\n", i, adj_list[i][j]);
 	fclose(fp);
 
 	for (int i = 0; i < rows_num; i++) {
