@@ -1,11 +1,10 @@
-#include <stdio.h>
 #include <stdlib.h>
 
-#include "robot_parser.h"
+#include "r_parser.h"
 
 int **numSheme(int rows_num, int columns_num, char **sheme, int *nodes_num, int *eyes_num) {
-	*nodes_num = 0;
-	*eyes_num = 0;
+	int n_num = 0;
+	int e_num = 0;
 
 	int **num_sheme = malloc(sizeof(int*) * rows_num);
 	for (int i = 0; i < rows_num; i++) 
@@ -14,13 +13,15 @@ int **numSheme(int rows_num, int columns_num, char **sheme, int *nodes_num, int 
 	for (int i = 0; i < rows_num; i++) 
 		for (int j = 0; j < columns_num; j++) {
 			if (sheme[i][j] != SPACE_CHAR)
-				num_sheme[i][j] = *nodes_num++;
+				num_sheme[i][j] = n_num++;
 			else num_sheme[i][j] = -1;
 
 			if (sheme[i][j] == EYE_CHAR)
-				*eyes_num++;
-		}		
-	
+				e_num++;
+		}
+
+	*nodes_num = n_num;
+	*eyes_num = e_num;	
 	return num_sheme;
 }
 
@@ -105,50 +106,3 @@ adj *adjList(int nodes_num, int *offset, int edges_num, edge *edge_list) {
 						
 	return adj_nums;
 }
-
-int parse_robot(char *file_in, char *file_out) {
-	int rows_num;
-	int columns_num;
-	char **sheme;
-	FILE *fp;
-
-	fp = fopen(file_in, "r");
-	fscanf(fp, "%i%i", &rows_num, &columns_num);
-	sheme = malloc(sizeof(char*) * rows_num);
-	for (int i = 0; i < rows_num; i++) {
-		sheme[i] = calloc(sizeof(char), columns_num + 1);
-		fscanf(fp, "%s", sheme[i]);
-	}
-	fclose(fp);
-	
-	int nodes_num;
-	int eyes_num;
-	int edges_num;
-	
-	int **num_sheme = numSheme(rows_num, columns_num, sheme, &nodes_num, &eyes_num);
-	edge *edge_list = edgeList(rows_num, columns_num, num_sheme, nodes_num, &edges_num);
-	
-	fp = fopen(file_out, "w+");
-	fprintf(fp, "%i\n", edges_num);
-	for (int i = 0; i < edges_num; i++)
-		fprintf(fp, "%i %i\n", edge_list[i][0], edge_list[i][1]);
-	
-	fprintf(fp, "\n");
-	fprintf(fp, "%i\n", nodes_num);
-	for (int i = 0; i < nodes_num; i++)
-		for (int j = 0; j < MAX_ADJ_NUM; j++)
-		fprintf(fp, "%i %i\n", i, adj_list[i][j]);
-	fclose(fp);
-
-	for (int i = 0; i < rows_num; i++) {
-		free(sheme[i]);
-		free(num_sheme[i]);
-	}
-	free(sheme);
-	free(num_sheme);
-	free(edge_list);
-	free(adj_nums);
-
-	return 0;
-}
-
