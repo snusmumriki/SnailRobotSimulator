@@ -2,107 +2,103 @@
 
 #include "r_parser.h"
 
-int **numSheme(int rows_num, int columns_num, char **sheme, int *nodes_num, int *eyes_num) {
+Pos *posList(int frame_h, int frame_w, char **frame, int *nodes_num, int *eyes_num) {
 	int n_num = 0;
 	int e_num = 0;
 
-	int **num_sheme = malloc(sizeof(int*) * rows_num);
-	for (int i = 0; i < rows_num; i++) 
-		num_sheme[i] = malloc(sizeof(int) * columns_num);
-	
-	for (int i = 0; i < rows_num; i++) 
-		for (int j = 0; j < columns_num; j++) {
-			if (sheme[i][j] != SPACE_CHAR)
-				num_sheme[i][j] = n_num++;
-			else num_sheme[i][j] = -1;
-
-			if (sheme[i][j] == EYE_CHAR)
+	for (int i = 0; i < frame_h; i++) {
+		for (int j = 0; j < frame_w; j++) {
+			if (frame[i][j] != SPACE_CHAR)
+				n_num++;
+			if (frame[i][j] == EYE_CHAR)
 				e_num++;
+		}
+
+	Pos *pos_list = malloc(sizeof(Pos) * n_num);
+	n_num = 0;
+
+	for (int i = 0; i < frame_h; i++) {
+		for (int j = 0; j < frame_w; j++) {
+			if (frame[i][j] != SPACE_CHAR)
+				pos_list[n_num].i = i;
+				pos_list[n_num].j = j;
+				n_num++;
+			}
 		}
 
 	*nodes_num = n_num;
 	*eyes_num = e_num;	
-	return num_sheme;
+	return pos_list;
 }
 
-int *eyeList(int rows_num, int columns_num, char **sheme, int **num_sheme, int eyes_num) {
+int *eyeList(int eyes_num, int nodes_num, Pos *pos_list, char **frame) {
 	int k = 0;
-	int *eye_list = malloc(sizeof(int) * eyes_num);
+	int *eye_list = malloc(sizeof(Pos) * eyes_num);
 
-	for (int i = 0; i < rows_num; i++)
-		for (int j = 0; j < columns_num; j++)
-			if (sheme[i][j] == EYE_CHAR)
-				eye_list[k++] = num_sheme[i][j];
+	for (int i = 0; i < nodes_num; i++) {
+		Pos pos = pos_list[i];	
+		if (frame[pos.i][pos.j] == EYE_CHAR)
+				eye_pos[k++] = i;
+	}
 
 	return eye_list;
 }
 
-edge *edgeList(int rows_num, int columns_num, int **num_sheme, int nodes_num, int *edges_num) {
-	int num = 0;
-	edge *edge_list = malloc(sizeof(edge) * nodes_num * MAX_ADJ_NUM / 2);
+Edg *edgeList(int nodes_num, Pos *pos_list, int *edges_num) {
+	int e_num = 0;
+	Edg *edge_list = malloc(sizeof(Edg) * nodes_num * ADJ_NUM / 2);
 	
-	for (int j = 0; j < columns_num; j++) 
-		for(int i = (j + 1) % 2; i < rows_num - 2; i += 2) {
-			int node0 = num_sheme[i][j];
-			int node1 = num_sheme[i+2][j];
-			if (node0 >= 0 && node1 >= 0) {
-				edge_list[num][0] = node0;
-				edge_list[num][1] = node1;
-				num++;
+	for (int i = 0; i < nodes_num; i++)
+		for(int j = i; j < nodes_num; j++) {
+			Pos pos0 = posList[i];
+			Pos pos1 = posList[j];
+			if (pos0.i+2 == pos1.i && pos0.j = pos1.j) {
+				edge_list[e_num].nd0 = i;
+				edge_list[e_num].nd1 = j;
+				e_num++;
 			}
 		}
 
-	for (int j = 0; j < columns_num - 1; j++) 
-		for(int i = (j + 1) % 2; i < rows_num - 1; i += 2) {
-			int node0 = num_sheme[i][j];
-			int node1 = num_sheme[i+1][j+1];
-			if (node0 >= 0 && node1 >= 0) {
-				edge_list[num][0] = node0;
-				edge_list[num][1] = node1;
-				num++;
+	for (int i = 0; i < nodes_num; i++)
+		for(int j = i; j < nodes_num; j++) {
+			Pos pos0 = pos_ist[i];
+			Pos pos1 = pos_ist[j];
+			if (pos0.i+1 == pos1.i && pos0.j+1 = pos1.j) {
+				edge_list[e_num].nd0 = i;
+				edge_list[e_num].nd1 = j;
+				e_num++;
 			}
 		}
 
-	for (int j = 1; j < columns_num; j++) 
-		for(int i = (j + 1) % 2; i < rows_num - 1; i += 2) {
-			int node0 = num_sheme[i][j];
-			int node1 = num_sheme[i+1][j-1];
-			if (node0 >= 0 && node1 >= 0) {
-				edge_list[num][0] = node0;
-				edge_list[num][1] = node1;
-				num++;
+	for (int i = 0; i < nodes_num; i++)
+		for(int j = i; j < nodes_num; j++) {
+			Pos pos0 = pos_list[i];
+			Pos pos1 = pos_list[j];
+			if (pos0.i+1 == pos1.i && pos0.j-1 = pos1.j) {
+				edge_list[e_num].nd0 = i;
+				edge_list[e_num].nd1 = j;
+				e_num++;
 			}
 		}
 
-	*edges_num = num;
+	*edges_num = e_num;
 	return edge_list;
 }
 
-int *nodeOffsets(int rows_num, int columns_num, int **num_sheme, int nodes_num) {
-	int *offset = malloc(sizeof(int) * nodes_num);
-	int m = columns_num / 2;
+Adj *adjList(int nodes_num, Pos *pos_list, int edges_num, Edg *edge_list) {
+	Adj *adj_list = malloc(sizeof(Adj) * nodes_num);
+	
+	for (int i = 0; i < nodes_num * ADJ_NUM; i++)
+		((int*) adj_list)[i] = -1;
 
-	for (int i = 0; i < rows_num; i++)
-		for (int j = 0; j < columns_num; i++) {
-			int node = num_sheme[i][j];
-			if (node >= 0)
-				offset[node] = j - m;
-		}
-
-	return offset;
-}
-
-adj *adjList(int nodes_num, int *offset, int edges_num, edge *edge_list) {
-	adj *adj_list = malloc(sizeof(adj) * nodes_num);
-		
 	for (int i = 0; i < edges_num; i++) {
-		int node0 = edge_list[i][0];
-		int node1 = edge_list[i][1];
-		int diff = offset[node0] - offset[node1];
+		int node0 = edge_list[i].nd0;
+		int node1 = edge_list[i].nd1;
+		int diff = pos_list[node0].j - pos_list[node1].j;
 
-		adj_list[node0][BASE_1 + diff] = node1;
-		adj_list[node1][BASE_0 + diff] = node0;
+		((int*) (adj_list + node0))[BASE_1 + diff] = node1;
+		((int*) (adj_list + node1))[BASE_0 + diff] = node0;
 	}
-						
+
 	return adj_nums;
 }

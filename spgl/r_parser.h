@@ -2,20 +2,45 @@
 #define _ROBOT_PARSER_H_
 
 #define SPACE_CHAR '.'
-#define MAX_ADJ_NUM 6
-#define BASE_0 1
-#define BASE_1 4
 
-typedef int edge[2];
+#define DEF_CHAR '#'
+#define EYE_CHAR 'E'
+#define TAIL_CHAR 'T'
 
-typedef int adj[MAX_ADJ_NUM];
+#define VDEF_CHAR '*'
+#define VEYE_CHAR 'e'
+#define VTAIL_CHAR 't'
 
-int **numSheme(int rows_num, int columns_num, char **sheme, int *nodes_num);
+#define ADJ_NUM 6
+#define OFFSET_0 1
+#define OFFSET_1 4 
 
-edge *edgeList(int rows_num, int columns_num, int **num_sheme, int nodes_num, int *edges_num);
+typedef struct pos {
+	int i;
+	int j;
+} Pos;
 
-int *adjNums(int edges_num, int (*edge_list)[2], int nodes_num);
+typedef struct edg {
+	int nd0;
+	int nd1;
+} Edg;
 
-int parse_robot(char *file_in, char *file_out);
+typedef struct adj {
+	int up_r;
+	int up;
+	int up_l;
+	int down_l;
+	int down;
+	int down_r;
+} Adj;
+
+Pos *posList(int frame_h, int frame_w, char **frame, int *nodes_num, int *eyes_num);
+
+int *eyeList(int eyes_num, int nodes_num, Pos *pos_list, char **frame);
+
+Edg *edgeList(int nodes_num, Pos *pos_list, int *edges_num);
+
+Adj *adjList(int nodes_num, Pos *pos_list, int edges_num, Edg *edge_list);
+
 
 #endif
