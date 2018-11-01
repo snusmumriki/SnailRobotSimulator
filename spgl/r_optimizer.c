@@ -1,62 +1,47 @@
 #include <stdlib.h>
 
 #include "r_optimizer.h"
+#include "rbt.h"
 
-char **preSmooth(int *frame_h, int *frame_w, char **frame) {
-
-}
-
-void postSmooth(int frame_h, int frame_w, char **frame) {
+char **preSmooth(Frame frame) {
 
 }
 
-void smoothTop_in(int frame_h, int frame_w, char **frame, int eye, int *pos_list) {
+int isConvergent(Frame frame, Pos pos, int rotation, Pos *pos0, Pos *pos1) {
+	int central = 0;
+	int left = 0;
+	int right = 0;
+	int ext = 0;
+
+	Step step = step[ROTATE(rotaton + 2)];
+	for (int i = pos.i; i >= 0 && i < frame.h; i += step.i)
+		for (int j = pos.i; j >= 0 && j < frame.w; j += step.j) {
+			
+			}
+}
+
+int isBubble(Frame frame, Pos pos, int rotation, Pos *pos0, Pos *pos1) {
 
 }
 
-void smoothTop_out(int frame_h, int frame_w, char **frame, int eye, int *pos_list) {
+void addVirtNodes(Frame frame, Pos pos, Pos pos0, Pos pos1) {
 
 }
 
-void smoothBottom(int frame_h, int frame_w, char **frame) {
+void setExtNodes(Frame frame) {
 
 }
 
-int node_isLinked(int node, int rotation, Adj *adj_list) {
-	for (; node >= 0; node = ((int*) (adj_list + node))[ROTATE(rotation + 4)])
-		if (!node) return 1;
+void smoothOut(Frame frame, Pos pos, int rotation) {
+	Step step = step[rotation];
 
-	return 0;
-}
-
-void optimizeEyes(int frame_h, int frame_w, char **frame, 
-									int eyes_num, int *eye_list, Pos *pos_list, Adj *adj_list) {
-	for (int i = 0; i < eyes_num; i++) {
-		Adj adj = adj_list[eye];
-		Pos pos = pos_list[eye];
-
-		if (adj.down_l >= 0 && adj.down_r >= 0) {
-			smoothTop_out(frame_h, frame_w, frame, eye, offset);
-		} else {
-			if (!node_isLinked(eye, 1, middle, adj_list))
-				smoothTop_in(frame_h, frame_w, frame, eye, middle, pos_list);
+	for (int i = pos.i; i >= 0 && i < frame.h, i += step.i)
+		for (int j = pos.j; j >= 0 && j < frame.w; j += step.j) {
+			Pos pos0;
+			Pos pos1;
+			if (isConvergent(frame, pos, rotation, &pos0, &pos1) 
+											|| isBubble(frame, pos, rotation, &pos0, &pos1))
+				addVirtualNodes(frame, pos, pos0, pos1);
 		}
-	}
 }
 
-void optimizeTails(int frame_h, int frame_w, char **frame,
-										int tails_num, int *tail_list, Pos *pos_list, Adj *adj_list) {
-	for (int i = 0; i < eyes_num; i++) {
-		Adj adj = adj_list[eye];
-		Pos pos = pos_list[eye];
-
-		if (adj.down_l >= 0 && adj.down_r >= 0) {
-			smoothTop_out(frame_h, frame_w, frame, eye, offset);
-		} else {
-			if (!node_isLinked(eye, 1, middle, adj_list))
-				smoothTop_in(frame_h, frame_w, frame, eye, middle, pos_list);
-		}
-	}
-}
-
-void optimizeTails(int frame_h, int frame_w, char **frame,
