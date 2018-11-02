@@ -1,13 +1,11 @@
 #ifndef _R_OPTIMIZER_H_
-#definr _R_OPTIMIZER_H_
+#define _R_OPTIMIZER_H_
+
+#include "rbt.h"
 
 char **preSmooth(int *frame_h, int *frame_w, char **frame);
 
-void postSmooth(int frame_h, int frame_w, char **frame);
-
-void smoothTop_in(int frame_h, int frame_w, char **frame, int eye, int *pos_list);
-
-void smoothTop_out(int frame_h, int frame_w, char **frame, int eye, int *pos_list);
+void smoothOut(int frame_h, int frame_w, char **frame, int i0, int j0, int rotation);
 
 void smoothBottom(int frame_h, int frame_w, char **frame);
 

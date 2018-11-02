@@ -32,13 +32,13 @@ Pos *posList(int frame_h, int frame_w, char **frame, int *nodes_num, int *eyes_n
 }
 
 int *eyeList(int eyes_num, int nodes_num, Pos *pos_list, char **frame) {
-	int k = 0;
+	int j = 0;
 	int *eye_list = malloc(sizeof(Pos) * eyes_num);
 
 	for (int i = 0; i < nodes_num; i++) {
 		Pos pos = pos_list[i];	
 		if (frame[pos.i][pos.j] == EYE_CHAR)
-				eye_pos[k++] = i;
+				eye_pos[j++] = i;
 	}
 
 	return eye_list;
@@ -96,8 +96,8 @@ Adj *adjList(int nodes_num, Pos *pos_list, int edges_num, Edg *edge_list) {
 		int node1 = edge_list[i].nd1;
 		int diff = pos_list[node0].j - pos_list[node1].j;
 
-		((int*) (adj_list + node0))[BASE_1 + diff] = node1;
-		((int*) (adj_list + node1))[BASE_0 + diff] = node0;
+		adj_list[node0][BASE_1 + diff] = node1;
+		adj_list[node1][BASE_0 + diff] = node0;
 	}
 
 	return adj_nums;

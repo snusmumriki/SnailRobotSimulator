@@ -25,14 +25,7 @@ typedef struct edg {
 	int nd1;
 } Edg;
 
-typedef struct adj {
-	int up_r;
-	int up;
-	int up_l;
-	int down_l;
-	int down;
-	int down_r;
-} Adj;
+typedef int Adj[ADJ_NUM];
 
 Pos *posList(int frame_h, int frame_w, char **frame, int *nodes_num, int *eyes_num);
 
